@@ -31,6 +31,14 @@ events = 0
 files = 0
 charges_list = []
 phis_list = []
+
+v2eventsum = 0
+v3eventsum = 0
+v2eventmean = 0
+v2eventmeansqr = 0
+v3eventmean = 0
+v3eventmeansqr = 0
+
 for arg in sys.argv[1:]:
     if files%100 == 0:
         print "Files read:" ,files
