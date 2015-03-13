@@ -1,9 +1,8 @@
 #!/usr/bin/python
 
 import math
-from .. import dataobjects.particledata
 
-def ptdistr(particledatalist, ptypelist, ypoint, deltay, dndptsums):
+def ptdistr(particledatalist, ptypelist, deltapt, ypoint, deltay, dndptsums):
     for particle in particledatalist:
         if (particle.ptype in ptypelist):
             if (abs(particle.rap - ypoint) < deltay / 2.):
@@ -24,4 +23,3 @@ def etadistr(particles, deltaeta, etamin, dndetasum):
                 dndetasum[etabin] += 1.0
             except IndexError:
                 continue
-
