@@ -4,14 +4,14 @@
 
 import os
 import copy
-from .. import dataobjects.particledata
+from ..dataobjects import particledata as pd
 
 def read_afterburner_output(filename, read_initial=False):
     id_event = 0
+    eventlist = []
     if os.path.isfile(filename):
         read_data = False
         initial_list = False
-        eventlist = []
         particlelist = []
         for line in open(filename, "r"):
             inputline = line.split()
@@ -33,7 +33,7 @@ def read_afterburner_output(filename, read_initial=False):
                     else:
                         read_data = True
 
-            if read_data:
+            if read_data and len(inputline) == 13:
                 try:
                     px = float(inputline[4])
                     py = float(inputline[5])
@@ -43,7 +43,7 @@ def read_afterburner_output(filename, read_initial=False):
                     charge = int(inputline[10])
                 except ValueError:
                     continue
-                particledata = ParticleData([E, px, py, pz], ptype, charge)
+                particledata = pd.ParticleData([E, px, py, pz], ptype, charge)
                 particlelist.append(particledata)
 
         if (len(particlelist) > 0):
