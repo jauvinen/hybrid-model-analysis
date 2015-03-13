@@ -1,1 +1,1 @@
-__all__ = ["dndpt", "dndeta"]
+__all__ = ["distributions"]
