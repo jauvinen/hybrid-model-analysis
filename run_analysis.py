@@ -3,12 +3,13 @@
 import sys
 import os
 import math
+import array
 
 from hic import flow
 from hybrid_analysis.file_reader import hybrid_reader as reader
-#from ./hybrid_analysis import v_n as flow
 from hybrid_analysis.multiplicity import distributions as mlt
 from hybrid_analysis.v_n import cumulants as cumu
+from hybrid_analysis.v_n import eventplane as ep
 
 ypoint = 0.0
 deltay = 1.0
@@ -32,12 +33,7 @@ files = 0
 charges_list = []
 phis_list = []
 
-v2eventsum = 0
-v3eventsum = 0
-v2eventmean = 0
-v2eventmeansqr = 0
-v3eventmean = 0
-v3eventmeansqr = 0
+vn_event_sums = array.array('d', [0.0]*8)
 
 for arg in sys.argv[1:]:
     if files%100 == 0:
@@ -53,6 +49,8 @@ for arg in sys.argv[1:]:
             (ncharges, phis) = cumu.charged_phis(particlelist, ptmin=0.2, ptmax=2.0)
             charges_list.append(ncharges)
             phis_list.append(phis)
+            ep.v2v3event(particlelist, vn_event_sums,
+                         ptmin=0.2, ptmax=2.0, etacut=1.0)
 
 ptpoints = []
 for i in range(0, ptbins):
@@ -83,3 +81,5 @@ v22 = vnk.flow(2, 2)
 v24 = vnk.flow(2, 4)
 
 print "v2{2}:", v22, "v2{4}:", v24
+
+ep.v2v3mean(vn_event_sums, events)
