@@ -1,7 +1,8 @@
 #!/usr/bin/python
 
+import argparse
 import sys
-import os
+import os.path
 import math
 import array
 
@@ -10,6 +11,7 @@ from hybrid_analysis.file_reader import hybrid_reader as reader
 from hybrid_analysis.multiplicity import distributions as mlt
 from hybrid_analysis.v_n import cumulants as cumu
 from hybrid_analysis.v_n import eventplane as ep
+from hybrid_analysis.event_selection import centrality_filters as cf
 
 ypoint = 0.0
 deltay = 1.0
@@ -35,11 +37,33 @@ phis_list = []
 
 vn_event_sums = array.array('d', [0.0]*8)
 
-for arg in sys.argv[1:]:
+# parse command line arguments
+parser = argparse.ArgumentParser()
+parser.add_argument("-b", "--impact", type=float, nargs=2,
+                    metavar=('bmin', 'bmax'),
+                    help="impact parameter range")
+parser.add_argument("-n", "--npart", type=int, nargs=2,
+                    metavar=('nmin', 'nmax'),
+                    help="participant range")
+parser.add_argument("datapath",
+                    help="path to datafiles")
+args = parser.parse_args()
+
+datafiles = []
+if args.impact:
+    datafiles = cf.filter_events(args.datapath,
+                                 b_min=args.impact[0],
+                                 b_max=args.impact[1])
+elif args.npart:
+    datafiles = cf.filter_events(args.datapath,
+                                 npart_min=npart[0],
+                                 npart_max=npart[1])
+
+for datafile in datafiles:
     if files%100 == 0:
         print "Files read:" ,files
     files += 1
-    eventlist = reader.read_afterburner_output(arg)
+    eventlist = reader.read_afterburner_output(datafile)
     if eventlist:
         events += len(eventlist)
         for particlelist in eventlist:
