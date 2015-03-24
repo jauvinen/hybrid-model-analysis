@@ -19,12 +19,14 @@ def ptdistr(particledatalist, ptypelist, ptpoints, deltapt,
                 except IndexError:
                     continue
 
-def etadistr(particles, deltaeta, etamin, dndetasum):
-    np = 0
+def etadistr(particles, etapoints, deltaeta, dndetasum):
     for particle in particles:
         if (abs(particle.charge) > 0):
-            np += 1
-            etabin = int((particle.pseudorap - etamin)/deltaeta + 0.5)
+            etabin = len(etapoints)
+            for i in range(0, len(etapoints)):
+                if (abs(particle.pseudorap - etapoints[i]) < deltaeta / 2):
+                    etabin = i
+                    break
             try:
                 dndetasum[etabin] += 1.0
             except IndexError:
