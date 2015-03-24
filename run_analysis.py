@@ -35,9 +35,10 @@ for particletype in particleidlist:
 # To be compared with PHOBOS data
 # PRC83, 024913 (2011)
 deltaeta = 0.2
-etamin = -5.4
-etabins = int(-2 * etamin / deltaeta)
-dndetasum = [0.0] * etabins
+etamin = -5.3
+etabins = int(-2 * etamin / deltaeta + 0.5)
+nchetapoints = [ (etamin + deltaeta * i) for i in range(0, etabins+1) ]
+dndetasum = [0.0] * len(nchetapoints)
 
 # Flow analysis
 # To be compared with STAR data
@@ -87,7 +88,7 @@ for datafile in datafiles:
         for particlelist in eventlist:
             mlt.ptdistr(particlelist, particleidlist, spectraptpoints,
                         spectraptbinw, ypoint, deltay, dndptsums)
-            mlt.etadistr(particlelist, deltaeta, etamin, dndetasum)
+            mlt.etadistr(particlelist, nchetapoints, deltaeta, dndetasum)
             for ptpoint in flowptpoints:
                 minpt = ptpoint - flowptbinw / 2.0
                 maxpt = ptpoint + flowptbinw / 2.0
@@ -109,11 +110,8 @@ for ptype in dndptsums:
 
 print "Average Nch:", sum(dndetasum) * deltaeta / events
 dndeta = [ sumbin / events / deltaeta for sumbin in dndetasum ]
-etapoints = []
-for i in range(0,etabins):
-    etapoints.append(i * deltaeta + etamin + deltaeta / 2)
-for i in range(0, len(etapoints)):
-    print etapoints[i], dndeta[i]
+for i in range(0, len(nchetapoints)):
+    print nchetapoints[i], dndeta[i]
 
 print "Flow cumulant analysis"
 print "pT v2{2} v2{4}"
