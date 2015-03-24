@@ -16,6 +16,14 @@ from hybrid_analysis.v_n import eventplane as ep
 # Initialization
 events = 0
 
+# Integrated yields
+# To be compared with PHOBOS data
+# PRC75, 024910 (2007)
+midy_min = -0.1
+midy_max = 0.4
+integrated_p = 0.0
+integrated_pbar = 0.0
+
 # pT spectra
 # To be compared with PHOBOS data
 # PRC75, 024910 (2007)
@@ -86,6 +94,15 @@ for datafile in datafiles:
     if eventlist:
         events += len(eventlist)
         for particlelist in eventlist:
+            integrated_p += sum([ 1 for x in particlelist
+                                  if (x.ptype == 2212
+                                      and x.rap > midy_min
+                                      and x.rap < midy_max) ])
+            integrated_pbar += sum([ 1 for x in particlelist
+                                     if (x.ptype == -2212
+                                         and x.rap > midy_min
+                                         and x.rap < midy_max) ])
+
             mlt.ptdistr(particlelist, particleidlist, spectraptpoints,
                         spectraptbinw, ypoint, deltay, dndptsums)
             mlt.etadistr(particlelist, nchetapoints, deltaeta, dndetasum)
@@ -101,6 +118,12 @@ for datafile in datafiles:
                          ptmin=0.2, ptmax=2.0, etacut=1.0)
 
 # Analysis output
+yrange = midy_max - midy_min
+print "Integrated yields at midrapidity:",
+print midy_min, "< y <", midy_max
+print "Proton Antiproton"
+print integrated_p / yrange / events, integrated_pbar / yrange / events
+
 print "dn/dpT at y =", ypoint
 for ptype in dndptsums:
     print ptype
