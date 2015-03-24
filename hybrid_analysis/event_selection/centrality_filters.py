@@ -11,7 +11,7 @@ def filter_events(datapath, b_min=1.0, b_max=-1.0,
     jobid = -1
     impb = -1.0
     npart = -1
-    logpath = datapath+"log/"
+    logpath = datapath+"/log/"
     if not os.path.isdir(logpath):
         print "filter_events: Bad logfile path:", logpath
     logfiles = glob.glob(logpath+"hybrid.out.*")
