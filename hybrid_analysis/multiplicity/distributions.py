@@ -2,11 +2,17 @@
 
 import math
 
-def ptdistr(particledatalist, ptypelist, deltapt, ypoint, deltay, dndptsums):
+def ptdistr(particledatalist, ptypelist, ptpoints, deltapt,
+            ypoint, deltay, dndptsums):
     for particle in particledatalist:
         if (particle.ptype in ptypelist):
             if (abs(particle.rap - ypoint) < deltay / 2.):
-                ptbin = int(particle.pt / deltapt)
+                # Note that the default index value is beyond the list
+                ptbin = len(ptpoints)
+                for i in range(0, len(ptpoints)):
+                    if (abs(particle.pt - ptpoints[i]) < deltapt / 2.0):
+                        ptbin = i
+                        break
                 try:
                     dndptsums[particle.ptype][ptbin] = (dndptsums[particle.ptype][ptbin]
                                                         + 1.0 / particle.pt)
