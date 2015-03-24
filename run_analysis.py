@@ -13,20 +13,29 @@ from hybrid_analysis.multiplicity import distributions as mlt
 from hybrid_analysis.v_n import cumulants as cumu
 from hybrid_analysis.v_n import eventplane as ep
 
-ypoint = 0.0
-deltay = 1.0
+# Initialization
+events = 0
 
-deltapt = 0.2
-maxpt = 3.0
-ptbins = int(maxpt / deltapt)
+# pT spectra
+# To be compared with PHOBOS data
+# PRC75, 024910 (2007)
+# Rapidity point
+ypoint = 0.8
+deltay = 0.1
+spectraptpoints = [0.25, 0.30, 0.35, 0.40, 0.50, 0.55, 0.60, 0.70,
+                   1.0, 1.2, 1.55, 1.85, 2.2]
+spectraptbinw = 0.05
 dndptsums = {}
 particleidlist = [211, -211, 321, -321, 2212, -2212]
 for particletype in particleidlist:
-    dndptsum = [0.0] * ptbins
+    dndptsum = [0.0] * len(spectraptpoints)
     dndptsums[particletype] = dndptsum
 
+# Pseudorapidity distribution
+# To be compared with PHOBOS data
+# PRC83, 024913 (2011)
 deltaeta = 0.2
-etamin = -5
+etamin = -5.4
 etabins = int(-2 * etamin / deltaeta)
 dndetasum = [0.0] * etabins
 
@@ -76,8 +85,8 @@ for datafile in datafiles:
     if eventlist:
         events += len(eventlist)
         for particlelist in eventlist:
-            mlt.ptdistr(particlelist, particleidlist, deltapt, ypoint, deltay,
-                        dndptsums)
+            mlt.ptdistr(particlelist, particleidlist, spectraptpoints,
+                        spectraptbinw, ypoint, deltay, dndptsums)
             mlt.etadistr(particlelist, deltaeta, etamin, dndetasum)
             for ptpoint in flowptpoints:
                 minpt = ptpoint - flowptbinw / 2.0
@@ -91,15 +100,12 @@ for datafile in datafiles:
                          ptmin=0.2, ptmax=2.0, etacut=1.0)
 
 # Analysis output
-ptpoints = []
-for i in range(0, ptbins):
-    ptpoints.append(i * deltapt + deltapt / 2)
-
 print "dn/dpT at y =", ypoint
 for ptype in dndptsums:
     print ptype
-    for i in range(0, len(ptpoints)):
-        print ptpoints[i], dndptsums[ptype][i] / events / deltay / deltapt / 2 / math.pi
+    for i in range(0, len(spectraptpoints)):
+        print spectraptpoints[i],
+        print dndptsums[ptype][i] / events / deltay / spectraptbinw / 2/math.pi
 
 print "Average Nch:", sum(dndetasum) * deltaeta / events
 dndeta = [ sumbin / events / deltaeta for sumbin in dndetasum ]
