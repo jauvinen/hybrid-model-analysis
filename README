@@ -1,0 +1,8 @@
+A package of Python scripts for analysing transport+hydro+transport hybrid model output.
+
+Requirements:
+- Python 2.7
+- NumPy package & SciPy library
+- hic package by J. Bernhard (http://jbernhard.github.io/hic)
+
+
