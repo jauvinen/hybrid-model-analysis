@@ -51,6 +51,7 @@ dndetasum = [0.0] * len(nchetapoints)
 # Flow analysis
 # To be compared with STAR data
 # PRC86, 054908 (2012)
+cumulant_etacut = 1.0
 flowptpoints = [0.26, 0.44, 0.64, 0.84, 1.04, 1.24, 1.44, 1.64, 1.86, 2.19]
 flowptbinw = 0.8
 qcharges = {}
@@ -59,6 +60,7 @@ for ptpoint in flowptpoints:
     qcharges[ptpoint] = []
     qphis[ptpoint] = []
 
+vn_event_etacut = 0.1
 vn_event_sums = array.array('d', [0.0]*8)
 
 # parse command line arguments
@@ -109,13 +111,14 @@ for datafile in datafiles:
             for ptpoint in flowptpoints:
                 minpt = ptpoint - flowptbinw / 2.0
                 maxpt = ptpoint + flowptbinw / 2.0
-                (ncharges, phis) = cumu.charged_phis(particlelist, ptmin=minpt,
-                                                     ptmax=maxpt)
+                (ncharges, phis) = cumu.charged_phis(particlelist,
+                                                     ptmin=minpt, ptmax=maxpt,
+                                                     etacut=cumulant_etacut)
                 qcharges[ptpoint].append(ncharges)
                 qphis[ptpoint].append(phis)
 
             ep.v2v3event(particlelist, vn_event_sums,
-                         ptmin=0.2, ptmax=2.0, etacut=1.0)
+                         ptmin=0.2, ptmax=2.0, etacut=vn_event_etacut)
 
 # Analysis output
 yrange = midy_max - midy_min
@@ -136,7 +139,7 @@ dndeta = [ sumbin / events / deltaeta for sumbin in dndetasum ]
 for i in range(0, len(nchetapoints)):
     print nchetapoints[i], dndeta[i]
 
-print "Flow cumulant analysis"
+print "Flow cumulant analysis for pseudorapidity <", cumulant_etacut
 print "pT v2{2} v2{4}"
 for ptpoint in flowptpoints:
     q2_list = []
@@ -150,5 +153,5 @@ for ptpoint in flowptpoints:
     v24 = vnk.flow(2, 4)
     print ptpoint, v22, v24
 
-print "Flow event plane analysis"
+print "Flow event plane analysis for pseudorapidity <", vn_event_etacut
 ep.v2v3mean(vn_event_sums, events)
