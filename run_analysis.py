@@ -78,10 +78,12 @@ args = parser.parse_args()
 # Centrality filtering
 datafiles = []
 if args.impact:
+    print "Impact parameter range:", args.impact[0], args.impact[1]
     datafiles = cf.filter_events(args.datapath,
                                  b_min=args.impact[0],
                                  b_max=args.impact[1])
 elif args.npart:
+    print "Npart range:", args.npart[0], args.npart[1]
     datafiles = cf.filter_events(args.datapath,
                                  npart_min=npart[0],
                                  npart_max=npart[1])
