@@ -121,11 +121,14 @@ def v2v3mean(vn_event_sums, nevents):
         print "Uncorrected v2:", meanv2, "err:", errv2,
         print "v3:", meanv3, "err:", errv3
 
-        meanv2sub = math.sqrt(vn_event_sums[4] / nevents)
-        meanv3sub = math.sqrt(vn_event_sums[6] / nevents)
-        print "Rsub2:", meanv2sub, "Rsub3:", meanv3sub
-        meanv2subsqr = math.sqrt(vn_event_sums[5] / nevents)
-        meanv3subsqr = math.sqrt(vn_event_sums[7] / nevents)
+        submean = [0.0, 0.0, 0.0, 0.0]
+
+        for i in range(0, len(submean)):
+            if vn_event_sums[i+4] > 0.0:
+                submean[i] = math.sqrt(vn_event_sums[i+4] / nevents)
+
+        print "Rsub2:", submean[0], "err:", submean[1],
+        print "Rsub3:", submean[2], "err:", submean[3]
 
         v2corr = 0.0
         v2err = 0.0
@@ -134,7 +137,7 @@ def v2v3mean(vn_event_sums, nevents):
 
         print "R2_full chi2 R3_full chi3"
         v2 = True
-        for vnsub in [meanv2sub, meanv3sub]:
+        for vnsub in [submean[0], submean[2]]:
             chisub = 2.0
             delta = 8.0
             for iteration in range(0, 20):
@@ -156,10 +159,11 @@ def v2v3mean(vn_event_sums, nevents):
             print reso_corr, chifull,
 
             if v2:
-                v2corr = meanv2 / reso_corr
-                v2err = errv2 / reso_corr
+                if reso_corr > 0.0:
+                    v2corr = meanv2 / reso_corr
+                    v2err = errv2 / reso_corr
                 v2 = False
-            else:
+            elif reso_corr > 0.0:
                 v3corr = meanv3 / reso_corr
                 v3err = errv3 / reso_corr
 
