@@ -43,6 +43,9 @@ def v2v3event(particlelist, vn_event_sums,
         cos3mean = []
 
         npart = (len(filtered_particles) - 1)
+        if npart == 0:
+            return
+
         for i in range (0, len(filtered_particles)):
             if (i%2 == 0):
                 subgroup = 1
