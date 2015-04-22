@@ -63,6 +63,8 @@ for ptpoint in flowptpoints:
 vn_event_etacut = 0.1
 vn_event_sums = array.array('d', [0.0]*8)
 
+observables = ["np_integ", "dndpt", "dndeta", "v24", "v2ep"]
+
 # parse command line arguments
 parser = argparse.ArgumentParser()
 parser.add_argument("-b", "--impact", type=float, nargs=2,
@@ -71,6 +73,12 @@ parser.add_argument("-b", "--impact", type=float, nargs=2,
 parser.add_argument("-n", "--npart", type=int, nargs=2,
                     metavar=('nmin', 'nmax'),
                     help="participant range")
+parser.add_argument("-o", "--only", nargs=1, action='append',
+                    choices=observables,
+                    help="run only listed parts of analysis")
+parser.add_argument("-x", "--exclude", nargs=1, action='append',
+                    choices=observables,
+                    help="exclude listed parts of analysis")
 parser.add_argument("datapath",
                     help="path to datafiles")
 args = parser.parse_args()
@@ -88,6 +96,15 @@ elif args.npart:
                                  npart_min=npart[0],
                                  npart_max=npart[1])
 
+analysis = set()
+for obs in observables:
+    # Because 'append', args.only and args.exclude
+    # both return a list of 1-element lists
+    if args.only and [obs] in args.only:
+        analysis.add(obs)
+    if args.exclude and [obs] not in args.exclude:
+        analysis.add(obs)
+
 # Data analysis
 files = 0
 for datafile in datafiles:
@@ -98,62 +115,73 @@ for datafile in datafiles:
     if eventlist:
         events += len(eventlist)
         for particlelist in eventlist:
-            integrated_p += sum([ 1 for x in particlelist
-                                  if (x.ptype == 2212
-                                      and x.rap > midy_min
-                                      and x.rap < midy_max) ])
-            integrated_pbar += sum([ 1 for x in particlelist
-                                     if (x.ptype == -2212
-                                         and x.rap > midy_min
-                                         and x.rap < midy_max) ])
+            if "np_integ" in analysis:
+                integrated_p += sum([ 1 for x in particlelist
+                                      if (x.ptype == 2212
+                                          and x.rap > midy_min
+                                          and x.rap < midy_max) ])
+                integrated_pbar += sum([ 1 for x in particlelist
+                                         if (x.ptype == -2212
+                                             and x.rap > midy_min
+                                             and x.rap < midy_max) ])
 
-            mlt.ptdistr(particlelist, particleidlist, spectraptpoints,
-                        spectraptbinw, ypoint, deltay, dndptsums)
-            mlt.etadistr(particlelist, nchetapoints, deltaeta, dndetasum)
-            for ptpoint in flowptpoints:
-                minpt = ptpoint - flowptbinw / 2.0
-                maxpt = ptpoint + flowptbinw / 2.0
-                (ncharges, phis) = cumu.charged_phis(particlelist,
-                                                     ptmin=minpt, ptmax=maxpt,
-                                                     etacut=cumulant_etacut)
-                qcharges[ptpoint].append(ncharges)
-                qphis[ptpoint].append(phis)
+            if "dndpt" in analysis:
+                mlt.ptdistr(particlelist, particleidlist, spectraptpoints,
+                            spectraptbinw, ypoint, deltay, dndptsums)
+            if "dndeta" in analysis:
+                mlt.etadistr(particlelist, nchetapoints, deltaeta, dndetasum)
+            if "v24" in analysis:
+                for ptpoint in flowptpoints:
+                    minpt = ptpoint - flowptbinw / 2.0
+                    maxpt = ptpoint + flowptbinw / 2.0
+                    (ncharges, phis) = cumu.charged_phis(particlelist,
+                                                         ptmin=minpt,
+                                                         ptmax=maxpt,
+                                                         etacut=cumulant_etacut)
+                    qcharges[ptpoint].append(ncharges)
+                    qphis[ptpoint].append(phis)
 
-            ep.v2v3event(particlelist, vn_event_sums,
-                         ptmin=0.2, ptmax=2.0, etacut=vn_event_etacut)
+            if "v2ep" in analysis:
+                ep.v2v3event(particlelist, vn_event_sums,
+                             ptmin=0.2, ptmax=2.0, etacut=vn_event_etacut)
 
 # Analysis output
-yrange = midy_max - midy_min
-print "Integrated yields at midrapidity:",
-print midy_min, "< y <", midy_max
-print "Proton Antiproton"
-print integrated_p / yrange / events, integrated_pbar / yrange / events
+if "np_integ" in analysis:
+    yrange = midy_max - midy_min
+    print "Integrated yields at midrapidity:",
+    print midy_min, "< y <", midy_max
+    print "Proton Antiproton"
+    print integrated_p / yrange / events, integrated_pbar / yrange / events
 
-print "dn/dpT at y =", ypoint
-for ptype in dndptsums:
-    print ptype
-    for i in range(0, len(spectraptpoints)):
-        print spectraptpoints[i],
-        print dndptsums[ptype][i] / events / deltay / spectraptbinw / 2/math.pi
+if "dndpt" in analysis:
+    print "dn/dpT at y =", ypoint
+    for ptype in dndptsums:
+        print ptype
+        for i in range(0, len(spectraptpoints)):
+            print spectraptpoints[i],
+            print dndptsums[ptype][i] / events / deltay / spectraptbinw / 2/math.pi
 
-print "Average Nch:", sum(dndetasum) * deltaeta / events
-dndeta = [ sumbin / events / deltaeta for sumbin in dndetasum ]
-for i in range(0, len(nchetapoints)):
-    print nchetapoints[i], dndeta[i]
+if "dndeta" in analysis:
+    print "Average Nch:", sum(dndetasum) * deltaeta / events
+    dndeta = [ sumbin / events / deltaeta for sumbin in dndetasum ]
+    for i in range(0, len(nchetapoints)):
+        print nchetapoints[i], dndeta[i]
 
-print "Flow cumulant analysis for pseudorapidity <", cumulant_etacut
-print "pT v2{2} v2{4}"
-for ptpoint in flowptpoints:
-    q2_list = []
-    q4_list = []
-    for event in qphis[ptpoint]:
-        q2_list.append(flow.qn(event, 2))
-        q4_list.append(flow.qn(event, 4))
+if "v24" in analysis:
+    print "Flow cumulant analysis for pseudorapidity <", cumulant_etacut
+    print "pT v2{2} v2{4}"
+    for ptpoint in flowptpoints:
+        q2_list = []
+        q4_list = []
+        for event in qphis[ptpoint]:
+            q2_list.append(flow.qn(event, 2))
+            q4_list.append(flow.qn(event, 4))
 
-    vnk = flow.Cumulant(qcharges[ptpoint], q2=q2_list, q4=q4_list)
-    v22 = vnk.flow(2, 2)
-    v24 = vnk.flow(2, 4)
-    print ptpoint, v22, v24
+        vnk = flow.Cumulant(qcharges[ptpoint], q2=q2_list, q4=q4_list)
+        v22 = vnk.flow(2, 2)
+        v24 = vnk.flow(2, 4)
+        print ptpoint, v22, v24
 
-print "Flow event plane analysis for pseudorapidity <", vn_event_etacut
-ep.v2v3mean(vn_event_sums, events)
+if "v2ep" in analysis:
+    print "Flow event plane analysis for pseudorapidity <", vn_event_etacut
+    ep.v2v3mean(vn_event_sums, events)
