@@ -10,6 +10,7 @@ from hic import flow
 from hybrid_analysis.event_selection import centrality_filters as cf
 from hybrid_analysis.file_reader import hybrid_reader as reader
 from hybrid_analysis.multiplicity import distributions as mlt
+from hybrid_analysis.multiplicity import counters
 from hybrid_analysis.v_n import cumulants as cumu
 from hybrid_analysis.v_n import eventplane as ep
 
@@ -24,6 +25,15 @@ midy_max = 0.4
 integrated_p = 0.0
 integrated_pbar = 0.0
 
+# mean pT
+# To be compared with STAR data
+# PRC79, 034909 (2009)
+meanpt_deltay = 0.2
+ptsums = {}
+particleidlist = [211, -211, 321, -321, 2212, -2212]
+for particletype in particleidlist:
+    ptsums[particletype] = (0.0, 0)
+
 # pT spectra
 # To be compared with PHOBOS data
 # PRC75, 024910 (2007)
@@ -34,7 +44,6 @@ spectraptpoints = [0.25, 0.30, 0.35, 0.40, 0.50, 0.55, 0.60, 0.70,
                    1.0, 1.2, 1.55, 1.85, 2.2]
 spectraptbinw = 0.05
 dndptsums = {}
-particleidlist = [211, -211, 321, -321, 2212, -2212]
 for particletype in particleidlist:
     dndptsum = [0.0] * len(spectraptpoints)
     dndptsums[particletype] = dndptsum
@@ -63,7 +72,7 @@ for ptpoint in flowptpoints:
 vn_event_etacut = 0.1
 vn_event_sums = array.array('d', [0.0]*8)
 
-observables = ["np_integ", "dndpt", "dndeta", "v24", "v2ep"]
+observables = ["np_integ", "meanpt", "dndpt", "dndeta", "v24", "v2ep"]
 
 # parse command line arguments
 parser = argparse.ArgumentParser()
@@ -124,7 +133,9 @@ for datafile in datafiles:
                                          if (x.ptype == -2212
                                              and x.rap > midy_min
                                              and x.rap < midy_max) ])
-
+            if "meanpt" in analysis:
+                counters.ptcount(particlelist, particleidlist,
+                                 ptsums, deltay=meanpt_deltay)
             if "dndpt" in analysis:
                 mlt.ptdistr(particlelist, particleidlist, spectraptpoints,
                             spectraptbinw, ypoint, deltay, dndptsums)
@@ -152,6 +163,15 @@ if "np_integ" in analysis:
     print midy_min, "< y <", midy_max
     print "Proton Antiproton"
     print integrated_p / yrange / events, integrated_pbar / yrange / events
+
+if "meanpt" in analysis:
+    print "<pT> at |y| <", meanpt_deltay / 2
+    for ptype in ptsums:
+        print ptype
+        try:
+            print ptsums[ptype][0] / ptsums[ptype][1]
+        except ZeroDivisionError:
+            print 0.0
 
 if "dndpt" in analysis:
     print "dn/dpT at y =", ypoint
