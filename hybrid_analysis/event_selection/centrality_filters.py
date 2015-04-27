@@ -57,7 +57,38 @@ def sort_by_logfolder(datapath,
             events_by_npart.remove(datafile)
 
 
+def sort_by_bfile(bfiles, b_min, b_max, events_by_b):
+    if len(bfiles) > 1:
+        print "Warning: Several .b files detected. Using the first in list:"
+        print bfiles[0]
+    datapath = os.path.dirname(bfiles[0])
+    with open(bfiles[0], 'r') as bf:
+        for line in bf:
+            data = line.split()
+            try:
+                jobid = data[0]
+                impb = float(data[1])
+                if impb >= b_min and impb <= b_max:
+                    events_by_b.append(datapath+"/afterburner"+jobid+".output")
+            except ValueError:
+                continue
 
+
+def sort_by_npartfile(npfiles, npart_min, npart_max, events_by_npart):
+    if len(npfiles) > 1:
+        print "Warning: Several .npart files detected. Using the first in list:"
+        print npfiles[0]
+    datapath = os.path.dirname(npfiles[0])
+    with open(npfiles[0], 'r') as npf:
+        for line in npf:
+            data = line.split()
+            try:
+                jobid = data[0]
+                npart = int(data[1])
+                if npart >= npart_min and npart <= npart_max:
+                    events_by_npart.append(datapath+"/afterburner"+jobid+".output")
+            except ValueError:
+                continue
 
 # Function for selecting a subset of events
 # based on impact parameter b
@@ -67,9 +98,20 @@ def filter_events(datapath, b_min=1.0, b_max=-1.0,
     events_by_b = []
     events_by_npart = []
 
-    sort_by_logfolder(datapath,
-                      b_min, b_max, events_by_b,
-                      npart_min, npart_max, events_by_npart)
+    bfiles = [ f for f in glob.glob(datapath+"/*.b") if os.path.isfile(f) ]
+    npfiles = [ f for f in glob.glob(datapath+"/*.npart") if os.path.isfile(f) ]
+
+    if bfiles:
+        print "Found a .b file, doing impact parameter filtering."
+        sort_by_bfile(bfiles, b_min, b_max, events_by_b)
+    if npfiles:
+        print "Found a .npart file, doing participant number filtering."
+        sort_by_npartfile(npfiles, npart_min, npart_max, events_by_npart)
+
+    if not bfiles and not npfiles:
+        sort_by_logfolder(datapath,
+                          b_min, b_max, events_by_b,
+                          npart_min, npart_max, events_by_npart)
 
     # Return the appropriate list of events
     if events_by_b:
