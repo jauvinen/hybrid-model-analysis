@@ -102,8 +102,8 @@ if args.impact:
 elif args.npart:
     print "Npart range:", args.npart[0], args.npart[1]
     datafiles = cf.filter_events(args.datapath,
-                                 npart_min=npart[0],
-                                 npart_max=npart[1])
+                                 npart_min=args.npart[0],
+                                 npart_max=args.npart[1])
 
 analysis = set()
 for obs in observables:
