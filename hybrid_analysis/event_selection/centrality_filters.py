@@ -4,13 +4,9 @@ import os.path
 import glob
 import sys
 
-# Function for selecting a subset of events
-# based on impact parameter b
-# or number of participants npart
-def filter_events(datapath, b_min=1.0, b_max=-1.0,
-                  npart_min=1, npart_max=-1):
-    events_by_b = []
-    events_by_npart = []
+def sort_by_logfolder(datapath,
+                      b_min, b_max, events_by_b,
+                      npart_min, npart_max, events_by_npart):
     # find jobs that satisfy the selection criteria
     jobid = -1
     impb = -1.0
@@ -59,6 +55,21 @@ def filter_events(datapath, b_min=1.0, b_max=-1.0,
             events_by_b.remove(datafile)
         if datafile in events_by_npart:
             events_by_npart.remove(datafile)
+
+
+
+
+# Function for selecting a subset of events
+# based on impact parameter b
+# or number of participants npart
+def filter_events(datapath, b_min=1.0, b_max=-1.0,
+                  npart_min=1, npart_max=-1):
+    events_by_b = []
+    events_by_npart = []
+
+    sort_by_logfolder(datapath,
+                      b_min, b_max, events_by_b,
+                      npart_min, npart_max, events_by_npart)
 
     # Return the appropriate list of events
     if events_by_b:
