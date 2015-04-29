@@ -61,8 +61,8 @@ dndetasum = [0.0] * len(nchetapoints)
 # To be compared with STAR data
 # PRC86, 054908 (2012)
 cumulant_etacut = 1.0
-flowptpoints = [0.26, 0.44, 0.64, 0.84, 1.04, 1.24, 1.44, 1.64, 1.86, 2.19]
-flowptbinw = 0.8
+flowptpoints = [0.26, 0.44, 0.64, 0.84, 1.04, 1.24, 1.44, 1.64, 1.86]
+flowptbinw = 0.2
 qcharges = {}
 qphis = {}
 for ptpoint in flowptpoints:
