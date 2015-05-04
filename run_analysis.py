@@ -69,7 +69,7 @@ for ptpoint in flowptpoints:
     qcharges[ptpoint] = []
     qphis[ptpoint] = []
 
-vn_event_etacut = 0.1
+vn_event_etacut = 0.3
 vn_event_sums = array.array('d', [0.0]*8)
 
 observables = ["np_integ", "meanpt", "dndpt", "dndeta", "v24", "v2ep"]
