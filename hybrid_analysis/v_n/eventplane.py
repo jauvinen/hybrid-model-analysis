@@ -12,90 +12,57 @@ import scipy.special as bessel
 def v2v3event(particlelist, vn_event_sums,
               ptmin=0.2, ptmax=2.0, etacut=1.0):
 
-    ncharges = 0
     if (len(particlelist) > 1):
+        # Apply pT, rapidity and charge cuts
         filtered_particles = [ x for x in particlelist
                                if (x.pt > ptmin and x.pt < ptmax
-                                   and abs(x.pseudorap) < etacut) ]
+                                   and abs(x.pseudorap) < etacut
+                                   and x.charge != 0) ]
+
+        ncharges = len(filtered_particles)
+        # Several particles are required for proper analysis
+        if ncharges < 2:
+            return
 
         ptarray = numpy.array([ x.pt for x in filtered_particles ])
         phiarray = numpy.array([ x.phi for x in filtered_particles ])
 
-        sin2array = numpy.sin(2 * phiarray)
-        cos2array = numpy.cos(2 * phiarray)
-        sin3array = numpy.sin(3 * phiarray)
-        cos3array = numpy.cos(3 * phiarray)
-        ptphisin2 = (numpy.multiply(ptarray, sin2array))
-        ptphicos2 = (numpy.multiply(ptarray, cos2array))
-        ptphisin3 = (numpy.multiply(ptarray, sin3array))
-        ptphicos3 = (numpy.multiply(ptarray, cos3array))
+        ptphisin2 = numpy.multiply(ptarray, numpy.sin(2 * phiarray))
+        ptphicos2 = numpy.multiply(ptarray, numpy.cos(2 * phiarray))
+        ptphisin3 = numpy.multiply(ptarray, numpy.sin(3 * phiarray))
+        ptphicos3 = numpy.multiply(ptarray, numpy.cos(3 * phiarray))
 
-        sin2subsum = [0.0] * 2
-        cos2subsum = [0.0] * 2
-        sin3subsum = [0.0] * 2
-        cos3subsum = [0.0] * 2
-        nsub = [0] * 2
+        # exclude the analysed particle from event plane definition
+        # to avoid autocorrelations
+        sin2mean = numpy.subtract(ptphisin2.sum(), ptphisin2) / (ncharges - 1)
+        cos2mean = numpy.subtract(ptphicos2.sum(), ptphicos2) / (ncharges - 1)
+        sin3mean = numpy.subtract(ptphisin3.sum(), ptphisin3) / (ncharges - 1)
+        cos3mean = numpy.subtract(ptphicos3.sum(), ptphicos3) / (ncharges - 1)
 
-        chgphis = []
-        sin2mean = []
-        cos2mean = []
-        sin3mean = []
-        cos3mean = []
-
-        npart = (len(filtered_particles) - 1)
-        if npart == 0:
-            return
-
-        for i in range (0, len(filtered_particles)):
-            if (i%2 == 0):
-                subgroup = 1
-            else:
-                subgroup = 0
-            if (filtered_particles[i].charge != 0):
-                ncharges += 1
-                chgphis.append(filtered_particles[i].phi)
-
-                nsub[subgroup] += 1
-                sin2subsum[subgroup] += ptphisin2[i]
-                cos2subsum[subgroup] += ptphicos2[i]
-                sin3subsum[subgroup] += ptphisin3[i]
-                cos3subsum[subgroup] += ptphicos3[i]
-
-                # exclude the analysed particle from event plane definition
-                # to avoid autocorrelations
-
-                sin2mean.append((ptphisin2.sum() - ptphisin2[i]) / npart)
-                cos2mean.append((ptphicos2.sum() - ptphicos2[i]) / npart)
-                sin3mean.append((ptphisin3.sum() - ptphisin3[i]) / npart)
-                cos3mean.append((ptphicos3.sum() - ptphicos3[i]) / npart)
+        # Subevent sums for resolution correction calculation
+        sin2subsum = numpy.zeros(2)
+        cos2subsum = numpy.zeros(2)
+        sin3subsum = numpy.zeros(2)
+        cos3subsum = numpy.zeros(2)
+        for i in range(0, 2):
+            sin2subsum[i] = numpy.sum(ptphisin2[i::2])
+            cos2subsum[i] = numpy.sum(ptphicos2[i::2])
+            sin3subsum[i] = numpy.sum(ptphisin3[i::2])
+            cos3subsum[i] = numpy.sum(ptphicos3[i::2])
 
         # full event value
-        chgphiarray = numpy.array(chgphis)
-        sin2meanarray = numpy.array(sin2mean)
-        cos2meanarray = numpy.array(cos2mean)
-        psitwoarray = numpy.arctan2(sin2meanarray, cos2meanarray) / 2
-        sin3meanarray = numpy.array(sin3mean)
-        cos3meanarray = numpy.array(cos3mean)
-        psithreearray = numpy.arctan2(sin3meanarray, cos3meanarray) / 3
-        v2eventsum = numpy.sum(numpy.cos(2 * (chgphiarray - psitwoarray)))
-        v3eventsum = numpy.sum(numpy.cos(3 * (chgphiarray - psithreearray)))
+        psitwoarray = numpy.arctan2(sin2mean, cos2mean) / 2
+        psithreearray = numpy.arctan2(sin3mean, cos3mean) / 3
+        v2eventsum = numpy.sum(numpy.cos(2 * (phiarray - psitwoarray)))
+        v3eventsum = numpy.sum(numpy.cos(3 * (phiarray - psithreearray)))
 
-        if (ncharges > 0):
-            vn_event_sums[0] += v2eventsum / ncharges
-            vn_event_sums[1] += (v2eventsum / ncharges)**2
-            vn_event_sums[2] += v3eventsum / ncharges
-            vn_event_sums[3] += (v3eventsum / ncharges)**2
+        vn_event_sums[0] += v2eventsum / ncharges
+        vn_event_sums[1] += (v2eventsum / ncharges)**2
+        vn_event_sums[2] += v3eventsum / ncharges
+        vn_event_sums[3] += (v3eventsum / ncharges)**2
 
-        psi2sub = [0.0] * 2
-        psi3sub = [0.0] * 2
-        for i in range(0, 2):
-            if (nsub[i] > 0):
-                sin2submean = sin2subsum[i] / nsub[i]
-                cos2submean = cos2subsum[i] / nsub[i]
-                psi2sub[i] = math.atan2(sin2submean, cos2submean) / 2
-                sin3submean = sin3subsum[i] / nsub[i]
-                cos3submean = cos3subsum[i] / nsub[i]
-                psi3sub[i] = math.atan2(sin3submean, cos3submean) / 3
+        psi2sub = numpy.arctan2(sin2subsum, cos2subsum) / 2
+        psi3sub = numpy.arctan2(sin3subsum, cos3subsum) / 3
 
         psi2term = math.cos(2 * (psi2sub[0] - psi2sub[1]))
         psi3term = math.cos(3 * (psi3sub[0] - psi3sub[1]))
@@ -107,7 +74,6 @@ def v2v3event(particlelist, vn_event_sums,
 
 
 def v2v3mean(vn_event_sums, nevents):
-
     if nevents > 0:
         print "Events:", nevents
         meanv2 = vn_event_sums[0] / nevents
