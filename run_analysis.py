@@ -120,10 +120,18 @@ for datafile in datafiles:
     if files%100 == 0:
         print "Files read:" ,files
     files += 1
-    eventlist = reader.read_afterburner_output(datafile)
-    if eventlist:
-        events += len(eventlist)
-        for particlelist in eventlist:
+    if not os.path.isfile(datafile):
+        continue
+
+    with open(datafile, 'r') as f:
+        reading = True
+        while reading:
+            particlelist = reader.next_text_event(f)
+            if not particlelist:
+                reading = False
+                continue
+
+            events += 1
             if "np_integ" in analysis:
                 integrated_p += sum([ 1 for x in particlelist
                                       if (x.ptype == 2212

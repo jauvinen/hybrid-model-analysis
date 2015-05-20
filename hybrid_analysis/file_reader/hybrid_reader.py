@@ -45,7 +45,7 @@ def next_text_event(filehandle, read_initial=False):
     if particlelist:
         return particlelist
 
-def read_afterburner_output(filename, read_initial=False):
+def all_text_events(filename, read_initial=False):
     eventlist = []
     if os.path.isfile(filename):
         with open(filename, 'r') as f:
