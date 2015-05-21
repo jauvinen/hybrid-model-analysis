@@ -96,14 +96,16 @@ args = parser.parse_args()
 datafiles = []
 if args.impact:
     print "Impact parameter range:", args.impact[0], args.impact[1]
-    datafiles = cf.filter_events(args.datapath,
-                                 b_min=args.impact[0],
-                                 b_max=args.impact[1])
+    cfilter = cf.CentralityFilter(args.datapath,
+                                  b_min=args.impact[0],
+                                  b_max=args.impact[1])
+    datafiles = cfilter.filter_events()
 elif args.npart:
     print "Npart range:", args.npart[0], args.npart[1]
-    datafiles = cf.filter_events(args.datapath,
-                                 npart_min=args.npart[0],
-                                 npart_max=args.npart[1])
+    cfilter = cf.CentralityFilter(args.datapath,
+                                  npart_min=args.npart[0],
+                                  npart_max=args.npart[1])
+    datafiles = cfilter.filter_events()
 
 analysis = set()
 for obs in observables:
