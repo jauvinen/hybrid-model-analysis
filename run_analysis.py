@@ -111,7 +111,9 @@ for obs in observables:
     # both return a list of 1-element lists
     if args.only and [obs] in args.only:
         analysis.add(obs)
-    if args.exclude and [obs] not in args.exclude:
+    elif args.exclude and [obs] not in args.exclude:
+        analysis.add(obs)
+    elif not args.only and not args.exclude:
         analysis.add(obs)
 
 # Data analysis
