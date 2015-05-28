@@ -133,11 +133,13 @@ for obs in observables:
 
 # Data analysis
 files = 0
+skipped_files = 0
 for datafile in datafiles:
     if files%100 == 0:
         print "Files read:" ,files
     files += 1
     if not os.path.isfile(datafile):
+        skipped_files += 1
         continue
 
     with open(datafile, 'r') as f:
@@ -180,6 +182,8 @@ for datafile in datafiles:
             if "v2ep" in analysis:
                 ep.v2v3event(particlelist, vn_event_sums,
                              ptmin=0.2, ptmax=2.0, etacut=vn_event_etacut)
+
+print "Attempted to read", files, "files in total, failures:", skipped_files
 
 # Analysis output
 if "np_integ" in analysis:
