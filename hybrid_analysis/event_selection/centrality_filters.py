@@ -134,4 +134,4 @@ class CentralityFilter:
             return events_by_npart
         else:
             print "filter_events: None of the events fulfill the required criteria:"
-            print "b range:", b_min, b_max, "Npart range:", npart_min, npart_max
+            print "b range:", self._bmin, self._bmax, "Npart range:", self._npmin, self._npmax
