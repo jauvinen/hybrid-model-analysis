@@ -1,7 +1,6 @@
 #!/usr/bin/python
-
+""" Script for computing observables from a transport+hydro hybrid output """
 import argparse
-import sys
 import os.path
 import math
 import array
@@ -142,7 +141,7 @@ files = 0
 skipped_files = 0
 for datafile in datafiles:
     if files%100 == 0:
-        print "Files read:" ,files
+        print "Files read:", files
     files += 1
     if not os.path.isfile(datafile):
         skipped_files += 1
@@ -164,14 +163,14 @@ for datafile in datafiles:
                                     and abs(x.pseudorap) < nch_etacut)])
 
             if "np_integ" in analysis:
-                integrated_p += sum([ 1 for x in particlelist
-                                      if (x.ptype == 2212
-                                          and x.rap > midy_min
-                                          and x.rap < midy_max) ])
-                integrated_pbar += sum([ 1 for x in particlelist
-                                         if (x.ptype == -2212
-                                             and x.rap > midy_min
-                                             and x.rap < midy_max) ])
+                integrated_p += sum([1 for x in particlelist
+                                     if (x.ptype == 2212
+                                         and x.rap > midy_min
+                                         and x.rap < midy_max)])
+                integrated_pbar += sum([1 for x in particlelist
+                                        if (x.ptype == -2212
+                                            and x.rap > midy_min
+                                            and x.rap < midy_max)])
             if "meanpt" in analysis:
                 counters.ptcount(particlelist, particleidlist,
                                  ptsums, deltay=meanpt_deltay)
@@ -228,7 +227,7 @@ if "dndpt" in analysis:
 
 if "dndeta" in analysis:
     print "Average Nch:", sum(dndetasum) * deltaeta / events
-    dndeta = [ sumbin / events / deltaeta for sumbin in dndetasum ]
+    dndeta = [sumbin / events / deltaeta for sumbin in dndetasum]
     for i in range(0, len(nchetapoints)):
         print nchetapoints[i], dndeta[i]
 
