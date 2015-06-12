@@ -1,10 +1,16 @@
 #!/usr/bin/python
+""" Objects needed for centrality selection """
 
 import os.path
 import glob
 import sys
 
 class CentralityFilter:
+    """ Class for centrality selection.
+
+    Centrality classes are determined either via impact parameter
+    or number of participants.
+    """
     def __init__(self, datapath, b_min=1.0, b_max=-1.0,
                  npart_min=1, npart_max=-1,
                  suffix="output", logstring=".out."):
@@ -13,16 +19,19 @@ class CentralityFilter:
         self._bmax = b_max
         self._npmin = npart_min
         self._npmax = npart_max
-        self._suffix = suffix.replace('.','')
+        self._suffix = suffix.replace('.', '')
         self._outprefix = os.path.commonprefix(glob.glob(datapath
                                                          +"/*."+self._suffix))
         self._logstring = logstring
 
     def outputname(self, identifier):
+        """ Return the path of output file """
         return self._outprefix+str(identifier)+"."+self._suffix
 
     def sort_by_logfolder(self, events_by_b, events_by_npart):
-        # find jobs that satisfy the selection criteria
+        """ Find events that satisfy the selection criteria
+        based on job log files
+        """
         jobid = -1
         impb = -1.0
         npart = -1
@@ -73,10 +82,12 @@ class CentralityFilter:
 
 
     def sort_by_bfile(self, bfiles, events_by_b):
+        """ Sort events based on a user-provided file
+        containing impact parameter for each event
+        """
         if len(bfiles) > 1:
             print "Warning: Several .b files detected. Using the first in list:"
             print bfiles[0]
-        datapath = os.path.dirname(bfiles[0])
         with open(bfiles[0], 'r') as bf:
             for line in bf:
                 data = line.split()
@@ -90,10 +101,12 @@ class CentralityFilter:
 
 
     def sort_by_npartfile(self, npfiles, events_by_npart):
+        """ Sort events based on a user-provided file
+        containing number of participants for each event
+        """
         if len(npfiles) > 1:
             print "Warning: Several .npart files detected. Using the first in list:"
             print npfiles[0]
-        datapath = os.path.dirname(npfiles[0])
         with open(npfiles[0], 'r') as npf:
             for line in npf:
                 data = line.split()
@@ -105,15 +118,15 @@ class CentralityFilter:
                 except ValueError:
                     continue
 
-    # Function for selecting a subset of events
-    # based on impact parameter b
-    # or number of participants npart
     def filter_events(self):
+        """ Function for selecting a subset of events
+        based on impact parameter b or number of participants npart
+        """
         events_by_b = []
         events_by_npart = []
 
-        bfiles = [ f for f in glob.glob(self._path+"/*.b") if os.path.isfile(f) ]
-        npfiles = [ f for f in glob.glob(self._path+"/*.npart") if os.path.isfile(f) ]
+        bfiles = [f for f in glob.glob(self._path+"/*.b") if os.path.isfile(f)]
+        npfiles = [f for f in glob.glob(self._path+"/*.npart") if os.path.isfile(f)]
 
         if bfiles:
             print "Found a .b file, doing impact parameter filtering."
