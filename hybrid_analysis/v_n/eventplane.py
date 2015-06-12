@@ -1,31 +1,35 @@
 #!/usr/bin/python
-
-# Functions for computing event plane v2 and v3
+""" Functions for computing event plane v2 and v3 """
 
 import math
 import numpy
 import scipy.special as bessel
 
-# Compute single-event vn quantities
-# Input: List of particles, containing their momentum and azimuthal angle
-# Return: Tuple of <v2>, <v2^2>, <v3>, <v3^2>, and sub-event versions
 def v2v3event(particlelist, vn_event_sums,
               ptmin=0.2, ptmax=2.0, etacut=1.0):
+    """ Compute single-event vn quantities.
 
-    if (len(particlelist) > 1):
+    Input:
+    particlelist  -- List of ParticleData objects
+    vn_event_sums -- List of <v2>, <v2^2>, <v3>, <v3^2>, and sub-event versions
+    ptmin         -- lower pT cut
+    ptmax         -- upper pT cut
+    etacut        -- pseudorapidity cut (-etacut < x < etacut)
+    """
+    if len(particlelist) > 1:
         # Apply pT, rapidity and charge cuts
-        filtered_particles = [ x for x in particlelist
-                               if (x.pt > ptmin and x.pt < ptmax
-                                   and abs(x.pseudorap) < etacut
-                                   and x.charge != 0) ]
+        filtered_particles = [x for x in particlelist
+                              if (x.pt > ptmin and x.pt < ptmax
+                                  and abs(x.pseudorap) < etacut
+                                  and x.charge != 0)]
 
         ncharges = len(filtered_particles)
         # Several particles are required for proper analysis
         if ncharges < 2:
             return
 
-        ptarray = numpy.array([ x.pt for x in filtered_particles ])
-        phiarray = numpy.array([ x.phi for x in filtered_particles ])
+        ptarray = numpy.array([x.pt for x in filtered_particles])
+        phiarray = numpy.array([x.phi for x in filtered_particles])
 
         ptphisin2 = numpy.multiply(ptarray, numpy.sin(2 * phiarray))
         ptphicos2 = numpy.multiply(ptarray, numpy.cos(2 * phiarray))
@@ -74,6 +78,12 @@ def v2v3event(particlelist, vn_event_sums,
 
 
 def v2v3mean(vn_event_sums, nevents):
+    """ Calculate resolution-corrected, event-averaged v2 and v3.
+
+    Input:
+    vn_event_sums -- List of <v2>, <v2^2>, <v3>, <v3^2>, and sub-event versions
+    nevents       -- Number of events
+    """
     if nevents > 0:
         print "Events:", nevents
         meanv2 = vn_event_sums[0] / nevents
@@ -110,9 +120,9 @@ def v2v3mean(vn_event_sums, nevents):
                 arg = chisub**2 / 4
                 result = (math.sqrt(math.pi / 2) / 2 * chisub
                           * math.exp(-arg) * (bessel.i0(arg) + bessel.i1(arg)))
-                if (result < vnsub):
+                if result < vnsub:
                     chisub += delta
-                elif (result > vnsub):
+                elif result > vnsub:
                     chisub -= delta
                 else:
                     break
