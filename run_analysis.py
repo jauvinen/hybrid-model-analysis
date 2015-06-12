@@ -17,6 +17,12 @@ from hybrid_analysis.v_n import eventplane as ep
 # Initialization
 events = 0
 
+# Nch at |eta| < 0.5
+# To be compared with STAR data
+# PRC79, 034909 (2009)
+nch_etacut = 0.5
+nch_mid = 0
+
 # Integrated yields
 # To be compared with PHOBOS data
 # PRC75, 024910 (2007)
@@ -54,7 +60,7 @@ for particletype in particleidlist:
 deltaeta = 0.2
 etamin = -5.3
 etabins = int(-2 * etamin / deltaeta + 0.5)
-nchetapoints = [ (etamin + deltaeta * i) for i in range(0, etabins+1) ]
+nchetapoints = [(etamin + deltaeta * i) for i in range(0, etabins+1)]
 dndetasum = [0.0] * len(nchetapoints)
 
 # Flow analysis
@@ -72,7 +78,7 @@ for ptpoint in flowptpoints:
 vn_event_etacut = 0.3
 vn_event_sums = array.array('d', [0.0]*8)
 
-observables = ["np_integ", "meanpt", "dndpt", "dndeta", "v24", "v2ep"]
+observables = ["nch_mid", "np_integ", "meanpt", "dndpt", "dndeta", "v24", "v2ep"]
 
 # parse command line arguments
 parser = argparse.ArgumentParser()
@@ -151,6 +157,12 @@ for datafile in datafiles:
                 continue
 
             events += 1
+
+            if "nch_mid" in analysis:
+                nch_mid += sum([1 for x in particlelist
+                                if (abs(x.charge) > 0
+                                    and abs(x.pseudorap) < nch_etacut)])
+
             if "np_integ" in analysis:
                 integrated_p += sum([ 1 for x in particlelist
                                       if (x.ptype == 2212
@@ -186,6 +198,10 @@ for datafile in datafiles:
 print "Attempted to read", files, "files in total, failures:", skipped_files
 
 # Analysis output
+if "nch_mid" in analysis:
+    print "Nch for |eta| <", nch_etacut
+    print nch_mid / events
+
 if "np_integ" in analysis:
     yrange = midy_max - midy_min
     print "Integrated yields at midrapidity:",
