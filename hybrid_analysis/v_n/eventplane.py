@@ -6,7 +6,8 @@ import numpy
 import scipy.special as bessel
 
 def v2v3event(particlelist, vn_event_sums,
-              ptmin=0.2, ptmax=2.0, etacut=1.0):
+              ptmin=0.2, ptmax=2.0, etacut=1.0,
+              particletype=None):
     """ Compute single-event vn quantities.
 
     Input:
@@ -15,6 +16,7 @@ def v2v3event(particlelist, vn_event_sums,
     ptmin         -- lower pT cut
     ptmax         -- upper pT cut
     etacut        -- pseudorapidity cut (-etacut < x < etacut)
+    particletype  -- type specification for identified particle calculations
     """
     if len(particlelist) > 1:
         # Apply pT, rapidity and charge cuts
@@ -57,8 +59,18 @@ def v2v3event(particlelist, vn_event_sums,
         # full event value
         psitwoarray = numpy.arctan2(sin2mean, cos2mean) / 2
         psithreearray = numpy.arctan2(sin3mean, cos3mean) / 3
-        v2eventsum = numpy.sum(numpy.cos(2 * (phiarray - psitwoarray)))
-        v3eventsum = numpy.sum(numpy.cos(3 * (phiarray - psithreearray)))
+        if particletype:
+            typearray = numpy.array([1 if x.ptype == particletype else 0
+                                     for x in filtered_particles])
+            v2eventsum = numpy.sum(numpy.multiply(numpy.cos(2 * (phiarray - psitwoarray)), typearray))
+            v3eventsum = numpy.sum(numpy.multiply(numpy.cos(3 * (phiarray - psithreearray)), typearray))
+            ncharges = numpy.sum(typearray)
+
+            if ncharges < 2:
+                return
+        else:
+            v2eventsum = numpy.sum(numpy.cos(2 * (phiarray - psitwoarray)))
+            v3eventsum = numpy.sum(numpy.cos(3 * (phiarray - psithreearray)))
 
         vn_event_sums[0] += v2eventsum / ncharges
         vn_event_sums[1] += (v2eventsum / ncharges)**2
