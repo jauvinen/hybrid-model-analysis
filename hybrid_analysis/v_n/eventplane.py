@@ -15,14 +15,22 @@ def v2v3event(particlelist, vn_event_sums,
     vn_event_sums -- List of <v2>, <v2^2>, <v3>, <v3^2>, and sub-event versions
     ptmin         -- lower pT cut
     ptmax         -- upper pT cut
-    etacut        -- pseudorapidity cut (-etacut < x < etacut)
+    etacut        -- pseudorapidity cut (-etacut < x < etacut or etacut[0] < x < etacut[1])
     particletype  -- type specification for identified particle calculations
     """
     if len(particlelist) > 1:
+        if type(etacut) is tuple:
+            etamin = etacut[0]
+            etamax = etacut[1]
+        else:
+            etamin = -etacut
+            etamax = etacut
+
         # Apply pT, rapidity and charge cuts
         filtered_particles = [x for x in particlelist
                               if (x.pt > ptmin and x.pt < ptmax
-                                  and abs(x.pseudorap) < etacut
+                                  and x.pseudorap > etamin
+                                  and x.pseudorap < etamax
                                   and x.charge != 0)]
 
         ncharges = len(filtered_particles)
