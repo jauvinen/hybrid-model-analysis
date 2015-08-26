@@ -4,6 +4,7 @@ import argparse
 import os.path
 import math
 import array
+from collections import defaultdict
 
 from hic import flow
 from hybrid_analysis.event_selection import centrality_filters as cf
@@ -50,7 +51,7 @@ spectraptpoints = [0.25, 0.30, 0.35, 0.40, 0.50, 0.55, 0.60, 0.70,
 spectraptbinw = 0.05
 dndptsums = {}
 for particletype in particleidlist:
-    dndptsum = [0.0] * len(spectraptpoints)
+    dndptsum = defaultdict(float)
     dndptsums[particletype] = dndptsum
 
 # Pseudorapidity distribution
@@ -60,7 +61,7 @@ deltaeta = 0.2
 etamin = -5.3
 etabins = int(-2 * etamin / deltaeta + 0.5)
 nchetapoints = [(etamin + deltaeta * i) for i in range(0, etabins+1)]
-dndetasum = [0.0] * len(nchetapoints)
+dndetasum = defaultdict(float)
 
 # Flow analysis
 # To be compared with STAR data
@@ -221,15 +222,14 @@ if "dndpt" in analysis:
     print "dn/dpT at y =", ypoint
     for ptype in dndptsums:
         print ptype
-        for i in range(0, len(spectraptpoints)):
-            print spectraptpoints[i],
-            print dndptsums[ptype][i] / events / deltay / spectraptbinw / 2/math.pi
+        for ptpoint in spectraptpoints:
+            print ptpoint,
+            print dndptsums[ptype][ptpoint] / events / deltay / spectraptbinw / 2/math.pi
 
 if "dndeta" in analysis:
-    print "Average Nch:", sum(dndetasum) * deltaeta / events
-    dndeta = [sumbin / events / deltaeta for sumbin in dndetasum]
-    for i in range(0, len(nchetapoints)):
-        print nchetapoints[i], dndeta[i]
+    print "Average Nch:", sum(dndetasum.values()) * deltaeta / events
+    for eta in nchetapoints:
+        print eta, dndetasum[eta] / events / deltaeta
 
 if "v24" in analysis:
     print "Flow cumulant analysis for pseudorapidity <", cumulant_etacut
